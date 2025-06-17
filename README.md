@@ -13,3 +13,5 @@ User-Friendly Interface: Clean and intuitive design for easy navigation
 Created as a study project
 
 Not for any use other than educational
+
+Made using spoonacular API: https://spoonacular.com/food-api
