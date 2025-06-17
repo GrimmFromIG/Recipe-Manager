@@ -129,7 +129,6 @@ def display_recipe_details(recipe_id, favorites_manager):
                 use_container_width=True
             )
     
-    # Details display etc.
     st.image(recipe.get("image", ""), width=400)
     
     with st.expander("📝 Ingredients"):
