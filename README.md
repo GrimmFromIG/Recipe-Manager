@@ -6,10 +6,10 @@ Add & Store Recipes: Save your recipes with names, ingredients, instructions, an
 
 Search Functionality: Quickly find recipes by name or ingredients
 
-Categorization: Organize recipes by meal type (breakfast, lunch, dinner, dessert, etc.)
+Categorization: Search through recipes by ingridients
 
 User-Friendly Interface: Clean and intuitive design for easy navigation
 
-Data Persistence: Your recipes are saved and available even after closing the app
+Created as a study project
 
-Created as a study project* Not for any use other than educational
+Not for any use other than educational
