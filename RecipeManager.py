@@ -18,10 +18,7 @@ def init_session_state():
 init_session_state()
 
 class FavoriteRecipesCollection:
-    """ADT for managing favorite recipes"""
-    
     def add(self, recipe: Dict) -> None:
-        """Add recipe to favorites"""
         if not any(fav['id'] == recipe['id'] for fav in st.session_state.favorites):
             compact_recipe = {
                 'id': recipe['id'],
@@ -34,20 +31,16 @@ class FavoriteRecipesCollection:
             st.toast("Added to favorites!", icon="✅")
     
     def remove(self, recipe_id: int) -> None:
-        """Remove recipe from favorites"""
         st.session_state.favorites = [fav for fav in st.session_state.favorites if fav['id'] != recipe_id]
         st.toast("Removed from favorites", icon="❌")
     
     def contains(self, recipe_id: int) -> bool:
-        """Check if recipe is in favorites"""
         return any(fav['id'] == recipe_id for fav in st.session_state.favorites)
     
     def get_all(self) -> List[Dict]:
-        """Get all favorite recipes"""
         return st.session_state.favorites
 
 def search_recipes(query="", ingredients=""):
-    """Search recipes using Spoonacular API"""
     params = {
         "apiKey": API_KEY,
         "addRecipeInformation": True,
@@ -69,7 +62,6 @@ def search_recipes(query="", ingredients=""):
         st.session_state.search_results = []
 
 def get_recipe_details(recipe_id):
-    """Get detailed information for a specific recipe"""
     try:
         response = requests.get(
             f"{BASE_URL}/{recipe_id}/information",
@@ -82,7 +74,6 @@ def get_recipe_details(recipe_id):
         return None 
 
 def display_recipe_card(recipe, favorites_manager):
-    """Display a compact recipe card"""
     with st.container(border=True):
         col1, col2 = st.columns([1, 3])
         with col1:
@@ -91,7 +82,6 @@ def display_recipe_card(recipe, favorites_manager):
             st.subheader(recipe["title"])
             st.caption(f"⏱️ {recipe['readyInMinutes']} min | 🍽️ {recipe['servings']} servings")
             
-            # Favorite button - using callbacks to prevent rerun
             if favorites_manager.contains(recipe['id']):
                 st.button(
                     "❤️ Remove from favorites",
@@ -112,7 +102,6 @@ def display_recipe_card(recipe, favorites_manager):
             )
 
 def display_recipe_details(recipe_id, favorites_manager):
-    """Display full recipe details"""
     recipe = get_recipe_details(recipe_id)
     if not recipe:
         st.error("Recipe not found")
