@@ -164,7 +164,7 @@ st.set_page_config(page_title="Recipe Manager", page_icon="🍳", layout="wide")
 favorites_manager = FavoriteRecipesCollection()
 
 # Navigation
-tab1, tab2 = st.tabs(["🔍 Search Recipes", "❤️ My Favorites"])
+tab1, tab2, tab3 = st.tabs(["🔍 Search Recipes", "❤️ My Favorites", "📚 About"])
 
 with tab1:
     # Search form
@@ -219,3 +219,24 @@ with tab2:
                         key=f"remove_fav_{recipe['id']}",
                         on_click=lambda r=recipe: favorites_manager.remove(r['id'])
                     )
+
+with tab3:
+    st.title("About Recipe Manager")
+    st.markdown("""
+    This application allows you to search for recipes, view details, and manage your favorite recipes.
+    
+    **Features:**
+    - Search recipes by name or ingredients
+    - View detailed recipe information
+    - Add/remove recipes from favorites
+    - Responsive design for easy navigation
+    
+    **API Used:**
+    - Spoonacular API for recipe data
+    
+    **Built with:**
+    - Streamlit for the web interface
+                
+    **Creatorr**
+    - Bohdan Petroshchuk
+    """)
