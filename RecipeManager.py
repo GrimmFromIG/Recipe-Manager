@@ -138,6 +138,9 @@ def display_recipe_details(recipe_id, favorites_manager):
     with st.expander("📋 Instructions"):
         if recipe["instructions"]:
             instructions = recipe["instructions"]
+            instructions = instructions.replace('<ol>', '').replace('</ol>', '')
+            instructions = instructions.replace('<ul>', '').replace('</ul>', '')
+            instructions = instructions.replace('<li>', '• ').replace('</li>', '\n')
             st.markdown(instructions)
         else:
             st.warning("No instructions available")
