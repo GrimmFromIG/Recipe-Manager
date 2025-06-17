@@ -15,7 +15,7 @@ BASE_URL = "https://api.spoonacular.com/recipes"
     #if 'search_results' not in st.session_state:
         #st.session_state.search_results = []
 
-init_session_state()
+#init_session_state()
 
 class FavoriteRecipesCollection:
     def add(self, recipe: Dict) -> None:
