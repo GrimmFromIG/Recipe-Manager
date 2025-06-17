@@ -237,6 +237,6 @@ with tab3:
     **Built with:**
     - Streamlit for the web interface
                 
-    **Creatorr**
+    **Creator**
     - Bohdan Petroshchuk
     """)
