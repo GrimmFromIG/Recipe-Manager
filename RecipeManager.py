@@ -7,15 +7,15 @@ API_KEY = "328993ee5d0743ca8cfdc2a53f79f93a"
 BASE_URL = "https://api.spoonacular.com/recipes"
 
 # Initialize session
-#def init_session_state():
-    #if 'favorites' not in st.session_state:
-        #st.session_state.favorites = []
-    #if 'selected_recipe_id' not in st.session_state:
-        #st.session_state.selected_recipe_id = None
-    #if 'search_results' not in st.session_state:
-        #st.session_state.search_results = []
+def init_session_state():
+    if 'favorites' not in st.session_state:
+        st.session_state.favorites = []
+    if 'selected_recipe_id' not in st.session_state:
+        st.session_state.selected_recipe_id = None
+    if 'search_results' not in st.session_state:
+        st.session_state.search_results = []
 
-#init_session_state()
+init_session_state()
 
 class FavoriteRecipesCollection:
     def add(self, recipe: Dict) -> None:
