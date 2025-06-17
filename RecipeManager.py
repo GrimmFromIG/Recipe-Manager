@@ -2,6 +2,19 @@ import streamlit as st
 import requests
 from typing import List, Dict, Optional
 
+def verify_api_connection():
+    try:
+        test_response = requests.get(f"{BASE_URL}/complexSearch", 
+                                  params={"apiKey": API_KEY, "number": 1})
+        test_response.raise_for_status()
+        return True
+    except:
+        return False
+
+if not verify_api_connection():
+    st.error("Failed to connect to Spoonacular API. Please check your API key and internet connection.")
+    st.stop()
+
 # API Configuration
 API_KEY = "328993ee5d0743ca8cfdc2a53f79f93a"
 BASE_URL = "https://api.spoonacular.com/recipes"
@@ -157,6 +170,41 @@ def display_recipe_details(recipe_id: int) -> None:
     
     if recipe.get('sourceUrl'):
         st.markdown(f"[🔗 Original recipe]({recipe['sourceUrl']})")
+
+def search_recipes(query="", ingredients=""):
+    """Search recipes using Spoonacular API with better error handling"""
+    params = {
+        "apiKey": API_KEY,
+        "addRecipeInformation": True,
+        "fillIngredients": True,
+        "number": 10
+    }
+    
+    try:
+        if query:
+            params["query"] = query
+        if ingredients:
+            params["includeIngredients"] = ingredients
+        
+        response = requests.get(f"{BASE_URL}/complexSearch", params=params)
+        response.raise_for_status()  # Will raise HTTPError for bad responses
+        
+        # Check if results exist in response
+        if "results" not in response.json():
+            st.error("Unexpected API response format")
+            return []
+            
+        return response.json()["results"]
+        
+    except requests.exceptions.RequestException as e:
+        st.error(f"API request failed: {str(e)}")
+        return []
+    except json.JSONDecodeError:
+        st.error("Failed to parse API response")
+        return []
+    except Exception as e:
+        st.error(f"Unexpected error: {str(e)}")
+        return []
 
 # Main app interface
 st.set_page_config(page_title="Cooking Assistant", layout="wide")
