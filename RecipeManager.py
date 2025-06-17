@@ -2,19 +2,6 @@ import streamlit as st
 import requests
 from typing import List, Dict, Optional
 
-def verify_api_connection():
-    try:
-        test_response = requests.get(f"{BASE_URL}/complexSearch", 
-                                  params={"apiKey": API_KEY, "number": 1})
-        test_response.raise_for_status()
-        return True
-    except:
-        return False
-
-if not verify_api_connection():
-    st.error("Failed to connect to Spoonacular API. Please check your API key and internet connection.")
-    st.stop()
-
 # API Configuration
 API_KEY = "328993ee5d0743ca8cfdc2a53f79f93a"
 BASE_URL = "https://api.spoonacular.com/recipes"
