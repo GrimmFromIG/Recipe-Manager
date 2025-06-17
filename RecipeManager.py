@@ -79,7 +79,7 @@ def get_recipe_details(recipe_id):
         return response.json()
     except requests.exceptions.RequestException as e:
         st.error(f"Error fetching recipe details: {e}")
-        return None
+        return None 
 
 def display_recipe_card(recipe, favorites_manager):
     """Display a compact recipe card"""
