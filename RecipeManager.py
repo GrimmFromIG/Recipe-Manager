@@ -142,17 +142,14 @@ def display_recipe_details(recipe_id, favorites_manager):
         else:
             st.warning("No instructions available")
 
-# Main App
 st.set_page_config(page_title="Recipe Manager", page_icon="🍳", layout="wide")
 
-# Initialize favorites manager
 favorites_manager = FavoriteRecipesCollection()
 
 # Navigation
 tab1, tab2, tab3 = st.tabs(["🔍 Search Recipes", "❤️ My Favorites", "📚 About"])
 
 with tab1:
-    # Search form
     with st.form("search_form"):
         col1, col2 = st.columns(2)
         with col1:
@@ -162,7 +159,6 @@ with tab1:
         
         submitted = st.form_submit_button("Search Recipes")
     
-    # Display results or details
     if st.session_state.selected_recipe_id:
         display_recipe_details(st.session_state.selected_recipe_id, favorites_manager)
     elif submitted:
