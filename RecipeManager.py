@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from typing import List, Dict, Optional
 
-# API config
+# API attributes
 API_KEY = "328993ee5d0743ca8cfdc2a53f79f93a"
 BASE_URL = "https://api.spoonacular.com/recipes"
 
