@@ -2,11 +2,11 @@ import streamlit as st
 import requests
 from typing import List, Dict, Optional
 
-# API Configuration
+# API config
 API_KEY = "328993ee5d0743ca8cfdc2a53f79f93a"
 BASE_URL = "https://api.spoonacular.com/recipes"
 
-# Initialize session state keys
+# Initialize session
 def init_session_state():
     if 'favorites' not in st.session_state:
         st.session_state.favorites = []
@@ -105,7 +105,6 @@ def display_recipe_card(recipe, favorites_manager):
                     on_click=lambda: favorites_manager.add(recipe)
                 )
             
-            # Details button - updates session state without full rerun
             st.button(
                 "🔍 View details",
                 key=f"details_{recipe['id']}",
@@ -119,13 +118,11 @@ def display_recipe_details(recipe_id, favorites_manager):
         st.error("Recipe not found")
         return
     
-    # Back button - clears the selected recipe
     st.button(
         "← Back to results",
         on_click=lambda: st.session_state.pop('selected_recipe_id')
     )
     
-    # Header with favorite controls
     col_title, col_fav = st.columns([4, 1])
     with col_title:
         st.title(recipe["title"])
@@ -143,7 +140,7 @@ def display_recipe_details(recipe_id, favorites_manager):
                 use_container_width=True
             )
     
-    # Rest of your details display...
+    # Details display etc.
     st.image(recipe.get("image", ""), width=400)
     
     with st.expander("📝 Ingredients"):
