@@ -2,7 +2,7 @@
 Recipe Manager is a user-friendly application designed to help you organize, store, and access your favorite recipes with ease. Whether you're a cooking enthusiast or just looking to manage your meal plans better, this app provides a simple solution for all your recipe management needs.
 
 ✨ Features
-Add & Store Recipes: Save your recipes with names, ingredients, instructions, and categories
+Add & Store Recipes: Save your recipes with names, ingredients, instructions
 
 Search Functionality: Quickly find recipes by name or ingredients
 
