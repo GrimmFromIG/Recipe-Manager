@@ -6,160 +6,48 @@ from typing import List, Dict, Optional
 API_KEY = "328993ee5d0743ca8cfdc2a53f79f93a"
 BASE_URL = "https://api.spoonacular.com/recipes"
 
+# Initialize session state keys
+def init_session_state():
+    if 'favorites' not in st.session_state:
+        st.session_state.favorites = []
+    if 'selected_recipe_id' not in st.session_state:
+        st.session_state.selected_recipe_id = None
+    if 'search_results' not in st.session_state:
+        st.session_state.search_results = []
+
+init_session_state()
+
 class FavoriteRecipesCollection:
-    """Abstract Data Type (ADT) for managing favorite recipes collection"""
+    """ADT for managing favorite recipes"""
     
-    def __init__(self):
-        if 'favorites' not in st.session_state:
-            st.session_state.favorites = []
-    
-    def add(self, recipe: Dict) -> bool:
-        """Add recipe to collection"""
-        if not self.contains(recipe['id']):
+    def add(self, recipe: Dict) -> None:
+        """Add recipe to favorites"""
+        if not any(fav['id'] == recipe['id'] for fav in st.session_state.favorites):
             compact_recipe = {
                 'id': recipe['id'],
                 'title': recipe['title'],
                 'image': recipe.get('image', ''),
                 'readyInMinutes': recipe['readyInMinutes'],
-                'servings': recipe['servings'],
-                'sourceUrl': recipe.get('sourceUrl', '')
+                'servings': recipe['servings']
             }
             st.session_state.favorites.append(compact_recipe)
-            return True
-        return False
+            st.toast("Added to favorites!", icon="✅")
     
-    def remove(self, recipe_id: int) -> bool:
-        """Remove recipe from collection"""
-        initial_count = len(st.session_state.favorites)
-        st.session_state.favorites = [r for r in st.session_state.favorites if r['id'] != recipe_id]
-        return len(st.session_state.favorites) < initial_count
+    def remove(self, recipe_id: int) -> None:
+        """Remove recipe from favorites"""
+        st.session_state.favorites = [fav for fav in st.session_state.favorites if fav['id'] != recipe_id]
+        st.toast("Removed from favorites", icon="❌")
     
     def contains(self, recipe_id: int) -> bool:
-        """Check if recipe exists in collection"""
-        return any(r['id'] == recipe_id for r in st.session_state.favorites)
+        """Check if recipe is in favorites"""
+        return any(fav['id'] == recipe_id for fav in st.session_state.favorites)
     
     def get_all(self) -> List[Dict]:
-        """Get all recipes in collection"""
-        return st.session_state.favorites.copy()
-    
-    def get_by_id(self, recipe_id: int) -> Optional[Dict]:
-        """Find recipe by ID"""
-        for recipe in st.session_state.favorites:
-            if recipe['id'] == recipe_id:
-                return recipe
-        return None
-    
-    def count(self) -> int:
-        """Get total number of recipes in collection"""
-        return len(st.session_state.favorites)
-    
-    def clear(self) -> None:
-        """Clear the collection"""
-        st.session_state.favorites = []
-
-# Initialize ADT
-favorites = FavoriteRecipesCollection()
-
-def display_recipe_card(recipe: Dict) -> None:
-    """Display recipe card component"""
-    with st.container(border=True):
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            st.image(recipe.get('image', ''), width=150)
-        
-        with col2:
-            st.subheader(recipe['title'])
-            st.caption(f"⏱️ {recipe['readyInMinutes']} min | 🍽️ {recipe['servings']} servings")
-            
-            # Favorite management
-            if favorites.contains(recipe['id']):
-                if st.button("❤️ Remove from favorites", key=f"unfav_{recipe['id']}"):
-                    favorites.remove(recipe['id'])
-                    st.rerun()
-            else:
-                if st.button("♡ Add to favorites", key=f"fav_{recipe['id']}"):
-                    favorites.add(recipe)
-                    st.rerun()
-            
-            # Details button
-            if st.button("🔍 View details", key=f"details_{recipe['id']}"):
-                st.session_state.selected_recipe_id = recipe['id']
-                st.rerun()
-
-def display_favorites_page() -> None:
-    """Favorites page view"""
-    st.subheader("❤️ My Favorite Recipes")
-    
-    if favorites.count() == 0:
-        st.info("Your favorites list is empty")
-        return
-    
-    # Filtering and sorting
-    with st.expander("Filters and sorting"):
-        search_query = st.text_input("Search by name")
-        sort_option = st.selectbox("Sort by", 
-                                 ["Date added", "Cooking time", "Name"])
-    
-    # Apply filters
-    filtered = favorites.get_all()
-    
-    if search_query:
-        filtered = [r for r in filtered if search_query.lower() in r['title'].lower()]
-    
-    if sort_option == "Cooking time":
-        filtered.sort(key=lambda x: x['readyInMinutes'])
-    elif sort_option == "Name":
-        filtered.sort(key=lambda x: x['title'])
-    
-    # Display results
-    if not filtered:
-        st.warning("No recipes found")
-    else:
-        for recipe in filtered:
-            display_recipe_card(recipe)
-
-def display_recipe_details(recipe_id: int) -> None:
-    """Recipe details page view"""
-    recipe = get_recipe_details(recipe_id)
-    if not recipe:
-        st.error("Recipe not found")
-        return
-    
-    st.button("← Back", on_click=lambda: st.session_state.pop('selected_recipe_id'))
-    
-    # Header with favorite controls
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        st.title(recipe['title'])
-    with col2:
-        if favorites.contains(recipe_id):
-            if st.button("❤️ Remove from favorites", use_container_width=True):
-                favorites.remove(recipe_id)
-                st.rerun()
-        else:
-            if st.button("♡ Add to favorites", use_container_width=True):
-                favorites.add(recipe)
-                st.rerun()
-    
-    # Main content
-    st.image(recipe.get('image', ''), width=400)
-    
-    with st.expander("📝 Ingredients"):
-        for ing in recipe['extendedIngredients']:
-            st.markdown(f"- {ing['original']}")
-    
-    with st.expander("📋 Instructions"):
-        if recipe['instructions']:
-            instructions = recipe['instructions'].replace('<ol>', '').replace('</ol>', '').replace('<li>', '1. ')
-            st.markdown(instructions)
-        else:
-            st.warning("No instructions available")
-    
-    if recipe.get('sourceUrl'):
-        st.markdown(f"[🔗 Original recipe]({recipe['sourceUrl']})")
+        """Get all favorite recipes"""
+        return st.session_state.favorites
 
 def search_recipes(query="", ingredients=""):
-    """Search recipes using Spoonacular API with better error handling"""
+    """Search recipes using Spoonacular API"""
     params = {
         "apiKey": API_KEY,
         "addRecipeInformation": True,
@@ -167,72 +55,167 @@ def search_recipes(query="", ingredients=""):
         "number": 10
     }
     
+    if query:
+        params["query"] = query
+    if ingredients:
+        params["includeIngredients"] = ingredients
+    
     try:
-        if query:
-            params["query"] = query
-        if ingredients:
-            params["includeIngredients"] = ingredients
-        
         response = requests.get(f"{BASE_URL}/complexSearch", params=params)
-        response.raise_for_status()  # Will raise HTTPError for bad responses
-        
-        # Check if results exist in response
-        if "results" not in response.json():
-            st.error("Unexpected API response format")
-            return []
-            
-        return response.json()["results"]
-        
+        response.raise_for_status()
+        st.session_state.search_results = response.json().get("results", [])
     except requests.exceptions.RequestException as e:
-        st.error(f"API request failed: {str(e)}")
-        return []
-    except json.JSONDecodeError:
-        st.error("Failed to parse API response")
-        return []
-    except Exception as e:
-        st.error(f"Unexpected error: {str(e)}")
-        return []
+        st.error(f"Error searching recipes: {e}")
+        st.session_state.search_results = []
 
-# Main app interface
-st.set_page_config(page_title="Cooking Assistant", layout="wide")
+def get_recipe_details(recipe_id):
+    """Get detailed information for a specific recipe"""
+    try:
+        response = requests.get(
+            f"{BASE_URL}/{recipe_id}/information",
+            params={"apiKey": API_KEY, "includeNutrition": False}
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching recipe details: {e}")
+        return None
 
-# Navigation sidebar
-page = st.sidebar.radio("Menu", ["Recipe Search", "My Favorites", "About"])
+def display_recipe_card(recipe, favorites_manager):
+    """Display a compact recipe card"""
+    with st.container(border=True):
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            st.image(recipe.get("image", ""), width=150)
+        with col2:
+            st.subheader(recipe["title"])
+            st.caption(f"⏱️ {recipe['readyInMinutes']} min | 🍽️ {recipe['servings']} servings")
+            
+            # Favorite button - using callbacks to prevent rerun
+            if favorites_manager.contains(recipe['id']):
+                st.button(
+                    "❤️ Remove from favorites",
+                    key=f"unfav_{recipe['id']}",
+                    on_click=lambda: favorites_manager.remove(recipe['id'])
+                )
+            else:
+                st.button(
+                    "♡ Add to favorites",
+                    key=f"fav_{recipe['id']}",
+                    on_click=lambda: favorites_manager.add(recipe)
+                )
+            
+            # Details button - updates session state without full rerun
+            st.button(
+                "🔍 View details",
+                key=f"details_{recipe['id']}",
+                on_click=lambda: st.session_state.update(selected_recipe_id=recipe['id'])
+            )
 
-if page == "Recipe Search":
-    st.title("🔍 Recipe Search")
+def display_recipe_details(recipe_id, favorites_manager):
+    """Display full recipe details"""
+    recipe = get_recipe_details(recipe_id)
+    if not recipe:
+        st.error("Recipe not found")
+        return
     
+    # Back button - clears the selected recipe
+    st.button(
+        "← Back to results",
+        on_click=lambda: st.session_state.pop('selected_recipe_id')
+    )
+    
+    # Header with favorite controls
+    col_title, col_fav = st.columns([4, 1])
+    with col_title:
+        st.title(recipe["title"])
+    with col_fav:
+        if favorites_manager.contains(recipe['id']):
+            st.button(
+                "❤️ Remove from Favorites",
+                on_click=lambda: favorites_manager.remove(recipe['id']),
+                use_container_width=True
+            )
+        else:
+            st.button(
+                "♡ Add to Favorites",
+                on_click=lambda: favorites_manager.add(recipe),
+                use_container_width=True
+            )
+    
+    # Rest of your details display...
+    st.image(recipe.get("image", ""), width=400)
+    
+    with st.expander("📝 Ingredients"):
+        for ing in recipe['extendedIngredients']:
+            st.markdown(f"- {ing['original']}")
+    
+    with st.expander("📋 Instructions"):
+        if recipe["instructions"]:
+            instructions = recipe["instructions"].replace("<ol>", "").replace("</ol>", "").replace("<li>", "▸ ")
+            st.markdown(instructions)
+        else:
+            st.warning("No instructions available")
+
+# Main App
+st.set_page_config(page_title="Recipe Manager", page_icon="🍳", layout="wide")
+
+# Initialize favorites manager
+favorites_manager = FavoriteRecipesCollection()
+
+# Navigation
+tab1, tab2 = st.tabs(["🔍 Search Recipes", "❤️ My Favorites"])
+
+with tab1:
+    # Search form
     with st.form("search_form"):
-        query = st.text_input("Recipe name")
-        ingredients = st.text_input("Ingredients (comma separated)")
-        submitted = st.form_submit_button("Search")
+        col1, col2 = st.columns(2)
+        with col1:
+            query = st.text_input("Recipe name")
+        with col2:
+            ingredients = st.text_input("Ingredients (comma separated)")
+        
+        submitted = st.form_submit_button("Search Recipes")
     
-    if submitted:
+    # Display results or details
+    if st.session_state.selected_recipe_id:
+        display_recipe_details(st.session_state.selected_recipe_id, favorites_manager)
+    elif submitted:
         if not query and not ingredients:
             st.warning("Please enter search criteria")
         else:
-            results = search_recipes(query, ingredients)
-            if results:
-                for recipe in results:
-                    display_recipe_card(recipe)
+            with st.spinner("Searching recipes..."):
+                search_recipes(query, ingredients)
+            
+            if st.session_state.search_results:
+                st.subheader("Search Results")
+                for recipe in st.session_state.search_results:
+                    display_recipe_card(recipe, favorites_manager)
             else:
                 st.info("No recipes found")
 
-elif page == "My Favorites":
-    display_favorites_page()
-
-elif page == "About":
-    st.title("ℹ️ About")
-    st.write("""
-    ### Cooking Assistant
-    Recipe search and management app using Spoonacular API.
+with tab2:
+    st.subheader("❤️ My Favorite Recipes")
     
-    Features:
-    - Search recipes by name and ingredients
-    - Save favorite recipes
-    - Filter and sort favorites
-    """)
-
-# Handle recipe details view
-if 'selected_recipe_id' in st.session_state:
-    display_recipe_details(st.session_state.selected_recipe_id)
+    if not favorites_manager.get_all():
+        st.info("Your favorites list is empty")
+    else:
+        for recipe in favorites_manager.get_all():
+            with st.container(border=True):
+                col1, col2, col3 = st.columns([1, 3, 1])
+                with col1:
+                    st.image(recipe.get("image", ""), width=120)
+                with col2:
+                    st.subheader(recipe["title"])
+                    st.caption(f"⏱️ {recipe['readyInMinutes']} min | 🍽️ {recipe['servings']} servings")
+                with col3:
+                    st.button(
+                        "View Details",
+                        key=f"view_fav_{recipe['id']}",
+                        on_click=lambda r=recipe: st.session_state.update(selected_recipe_id=r['id'])
+                    )
+                    st.button(
+                        "Remove",
+                        key=f"remove_fav_{recipe['id']}",
+                        on_click=lambda r=recipe: favorites_manager.remove(r['id'])
+                    )
